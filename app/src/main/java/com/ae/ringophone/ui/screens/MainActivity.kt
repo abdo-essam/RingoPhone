@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ae.ringophone.ui.theme.RingoPhoneTheme
+import com.ae.ringophone.ui.viewmodels.MainViewModel
 import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,6 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val viewModel: MainViewModel = hiltViewModel()
             LaunchedEffect(Unit) {
                 FirebaseDatabase.getInstance().reference.child("test").setValue("Hello Abdo!")
             }
