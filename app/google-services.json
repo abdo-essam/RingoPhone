@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "79212648754",
+    "firebase_url": "https://ringophone-43413-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "ringophone-43413",
+    "storage_bucket": "ringophone-43413.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:79212648754:android:55c9160dc3cbb995f89f2b",
+        "android_client_info": {
+          "package_name": "com.ae.ringophone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChStS3aqepiV1CyOFLl5hor3r0iVmGY4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
