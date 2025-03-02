@@ -1,11 +1,15 @@
-package com.ae.ringophone.ui.screens
+package com.ae.ringophone.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ae.ringophone.ui.screens.MainScreen
 import com.ae.ringophone.ui.theme.RingoPhoneTheme
 import com.ae.ringophone.ui.viewmodels.MainViewModel
 import com.google.firebase.database.FirebaseDatabase
@@ -29,29 +34,10 @@ class MainActivity : ComponentActivity() {
                 FirebaseDatabase.getInstance().reference.child("test").setValue("Hello Abdo!")
             }
             RingoPhoneTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                Box (Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.systemBars)){
+                    MainScreen()
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    RingoPhoneTheme {
-        Greeting("Android")
     }
 }
