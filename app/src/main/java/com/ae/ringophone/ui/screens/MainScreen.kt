@@ -7,10 +7,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.ae.ringophone.ui.viewmodels.MainViewModel
 
 
 @Composable
 fun MainScreen() {
+    val viewModel: MainViewModel = hiltViewModel()
     val context = LocalContext.current
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
@@ -18,6 +21,7 @@ fun MainScreen() {
     ) { permissions ->
         if (permissions.all { it.value }) {
             // Handle granted permissions here
+            viewModel.permissionsGranted()
 
         } else {
             // Handle denied permissions here
