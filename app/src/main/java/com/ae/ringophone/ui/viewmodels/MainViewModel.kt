@@ -1,10 +1,12 @@
 package com.ae.ringophone.ui.viewmodels
 
+import android.app.Application
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ae.ringophone.remote.FirebaseClient
 import com.ae.ringophone.utils.MatchState
+import com.ae.ringophone.webrtc.RTCAudioManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -12,10 +14,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val firebaseClient: FirebaseClient
+    private val firebaseClient: FirebaseClient,
+    private val application: Application
 ) : ViewModel() {
 
-    var  matchState: MutableStateFlow<MatchState> = MutableStateFlow(MatchState.NewState)
+    var matchState: MutableStateFlow<MatchState> = MutableStateFlow(MatchState.NewState)
+    private val rtcAudioManager by lazy {
+        RTCAudioManager.create(application)
+    }
+
+    init {
+        rtcAudioManager.setDefaultAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE)
+    }
+
 
     fun permissionsGranted() {
         firebaseClient.observerUserStatus { status ->
@@ -28,8 +39,7 @@ class MainViewModel @Inject constructor(
             }
         }
 
-        firebaseClient.observeIncomingSignals {
-            signalDataModel ->
+        firebaseClient.observeIncomingSignals { signalDataModel ->
         }
     }
 
