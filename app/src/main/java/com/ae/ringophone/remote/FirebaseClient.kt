@@ -6,6 +6,7 @@ import com.ae.ringophone.utils.MatchState
 import com.ae.ringophone.utils.MyValueEventListener
 import com.ae.ringophone.utils.RingoPhoneApplication
 import com.ae.ringophone.utils.SharedPrefHelper
+import com.ae.ringophone.utils.SignalDataModel
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -117,6 +118,28 @@ class FirebaseClient @Inject constructor(
                     callback(null)
                 }
             })
+    }
+
+    fun observeIncomingSignals(callback: (SignalDataModel) -> Unit) {
+        database.child(FirebaseFieldNames.USERS).child(prefHelper.getUserId())
+            .child(FirebaseFieldNames.DATA).addValueEventListener(object : MyValueEventListener() {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    super.onDataChange(snapshot)
+                    runCatching {
+                        gson.fromJson(snapshot.value.toString(), SignalDataModel::class.java)
+                    }.onSuccess {
+                        if (it != null) callback(it)
+                    }.onFailure {
+                        Log.d(RingoPhoneApplication.TAG, "onDataChange: ${it.message}")
+                    }
+                }
+            })
+    }
+
+    // send signal to participant
+    suspend fun updateParticipantDataModel(participantId: String, data: SignalDataModel) {
+        database.child(FirebaseFieldNames.USERS).child(participantId).child(FirebaseFieldNames.DATA)
+            .setValue(gson.toJson(data)).await()
     }
 
     private suspend fun updateSelfStatus(status: StatusDataModel) {
