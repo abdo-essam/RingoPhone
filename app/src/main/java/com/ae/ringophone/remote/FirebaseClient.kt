@@ -29,56 +29,41 @@ class FirebaseClient @Inject constructor(
     // to handle all requests to Firebase
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    fun observerUserStatus(callback: (MatchState) -> Unit) {
+    fun observeUserStatus(callback: (MatchState) -> Unit) {
         coroutineScope.launch {
-            // remove self data
             removeSelfData()
-
-            // update self data to match state
             updateSelfStatus(StatusDataModel(type = StatusDataModelTypes.LookingForMatch))
-            val statusReference =
-                database.child(FirebaseFieldNames.USERS).child(prefHelper.getUserId()).child(
-                    FirebaseFieldNames.STATUS
-                )
 
-            statusReference.addValueEventListener(
-                object : MyValueEventListener() {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        super.onDataChange(snapshot)
-                        snapshot.getValue(StatusDataModel::class.java)?.let { status ->
-                            val newStatus = when (status.type) {
-                                StatusDataModelTypes.IDLE -> MatchState.IDLE
-                                StatusDataModelTypes.LookingForMatch -> MatchState.LookingForMatchState
-                                StatusDataModelTypes.OfferedMatch -> MatchState.OfferedMatchState(
-                                    status.participant!!
-                                )
+            val userId = prefHelper.getUserId()
+            val statusRef = database.child(FirebaseFieldNames.USERS).child(userId)
+                .child(FirebaseFieldNames.STATUS)
 
-                                StatusDataModelTypes.ReceivedMatch -> MatchState.ReceivedMatchState(
-                                    status.participant!!
-                                )
+            statusRef.addValueEventListener(object : MyValueEventListener() {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    snapshot.getValue(StatusDataModel::class.java)?.let { status ->
+                        val newState = when (status.type) {
+                            StatusDataModelTypes.LookingForMatch -> MatchState.LookingForMatchState
+                            StatusDataModelTypes.OfferedMatch -> MatchState.OfferedMatchState(status.participant!!)
+                            StatusDataModelTypes.ReceivedMatch -> MatchState.ReceivedMatchState(status.participant!!)
+                            StatusDataModelTypes.IDLE -> MatchState.IDLE
+                            StatusDataModelTypes.Connected -> MatchState.Connected
+                            else -> null
+                        }
 
-                                StatusDataModelTypes.Connected -> MatchState.Connected
-                                else -> null
-                            }
-
-                            newStatus?.let {
-                                callback(it)
-                            } ?: coroutineScope.launch {
-                                updateSelfStatus(
-                                    status = StatusDataModel(type = StatusDataModelTypes.LookingForMatch)
-                                )
-                                callback(MatchState.LookingForMatchState)
-                            }
-
-                        } ?: coroutineScope.launch {
+                        newState?.let { callback(it) } ?: coroutineScope.launch {
                             updateSelfStatus(StatusDataModel(type = StatusDataModelTypes.LookingForMatch))
                             callback(MatchState.LookingForMatchState)
                         }
+                    } ?: coroutineScope.launch {
+                        updateSelfStatus(StatusDataModel(type = StatusDataModelTypes.LookingForMatch))
+                        callback(MatchState.LookingForMatchState)
                     }
                 }
-            )
+            })
         }
     }
+
+
 
     suspend fun findNextMatch() {
         removeSelfData()
@@ -142,15 +127,20 @@ class FirebaseClient @Inject constructor(
             .setValue(gson.toJson(data)).await()
     }
 
-    private suspend fun updateSelfStatus(status: StatusDataModel) {
+    suspend fun updateSelfStatus(status: StatusDataModel) {
 
         database.child(FirebaseFieldNames.USERS).child(prefHelper.getUserId())
             .child(FirebaseFieldNames.STATUS).setValue(status).await()
     }
 
-    private suspend fun removeSelfData() {
+    suspend fun removeSelfData() {
         database.child(FirebaseFieldNames.USERS).child(prefHelper.getUserId())
             .child(FirebaseFieldNames.DATA).removeValue().await()
+    }
+
+    suspend fun updateParticipantStatus(participantId: String, status: StatusDataModel) {
+        database.child(FirebaseFieldNames.USERS).child(participantId)
+            .child(FirebaseFieldNames.STATUS).setValue(status).await()
     }
 
     fun clear() {
